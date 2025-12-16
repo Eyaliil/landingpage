@@ -1,9 +1,24 @@
 import { useState, useEffect, useRef } from 'react';
-import { motion, useInView } from 'framer-motion';
+import { motion, useInView, useScroll, useTransform } from 'framer-motion';
 
 export default function App() {
-  const screen2Ref = useRef(null);
+  const screen2Ref = useRef<HTMLElement>(null);
   const [isScreen2Visible, setIsScreen2Visible] = useState(false);
+
+  // Scroll-based animation for bars background
+  const { scrollYProgress } = useScroll({
+    target: screen2Ref,
+    offset: ["start end", "end start"]
+  });
+
+  // Transform scroll progress to background size (stretches from 100% to 200%)
+  const backgroundSize = useTransform(scrollYProgress, [0, 1], ["100%", "200%"]);
+  const backgroundPosition = useTransform(scrollYProgress, [0, 1], ["center", "center"]);
+  
+  // Transform scroll progress to envelope image opacity (three states: closed -> open -> read)
+  const closedEnvelopeOpacity = useTransform(scrollYProgress, [0, 0.3, 0.4], [1, 1, 0]);
+  const openEnvelopeOpacity = useTransform(scrollYProgress, [0, 0.35, 0.4, 0.5, 0.55], [0, 0, 1, 1, 0]);
+  const readEnvelopeOpacity = useTransform(scrollYProgress, [0, 0.5, 0.55], [0, 0, 1]);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -26,7 +41,7 @@ export default function App() {
     };
   }, []);
 
-  const StepCard = ({ children }) => {
+  const StepCard = ({ children }: { children: React.ReactNode }) => {
     const ref = useRef(null);
     const isInView = useInView(ref, { once: true, margin: '-50px' });
 
@@ -42,7 +57,7 @@ export default function App() {
     );
   };
 
-  const VectorImage = ({ src, alt, width }) => {
+  const VectorImage = ({ src, alt, width }: { src: string; alt: string; width?: string }) => {
     const ref = useRef(null);
     const isInView = useInView(ref, { once: true, margin: '-50px' });
 
@@ -135,35 +150,43 @@ export default function App() {
         initial={{ opacity: 0, y: 50 }}
         animate={isScreen2Visible ? { opacity: 1, y: 0 } : { opacity: 0, y: 50 }}
         transition={{ duration: 0.8, ease: 'easeOut' }}
-        className="relative h-screen w-screen bg-[url('/assets/images/bars.png')] bg-cover bg-center bg-no-repeat overflow-hidden flex flex-col items-center justify-center"
+        className="relative h-screen w-screen overflow-hidden flex flex-col items-center justify-center"
+        style={{
+          backgroundImage: "url('/assets/images/bars.png')",
+          backgroundSize: backgroundSize,
+          backgroundPosition: backgroundPosition,
+          backgroundRepeat: 'no-repeat',
+        }}
       >
         <img 
-          className='absolute top-8 sm:top-12 left-2 sm:left-4 w-12 sm:w-16' 
+          className='absolute left-1/2 transform -translate-x-1/2 top-8 sm:top-12 w-20 sm:w-24 md:w-28' 
           src='/assets/images/sticker1.png' 
           alt='sticker 1' 
-          style={{ width: '100px' }} 
         />
         <img 
-          className='absolute right-2 sm:right-4 bottom-12 sm:bottom-16 w-16 sm:w-24' 
+          className='absolute left-1/2 transform -translate-x-1/2 top-[calc(50%+250px)] w-[200px]' 
           src='/assets/images/sticker2.png' 
           alt='sticker 2' 
-          style={{ width: '120px' }} 
         />
-        <div className="flex flex-col items-center mx-auto px-4 w-full h-full justify-center">
-          <div className="relative bg-[url('/assets/images/envelop_image.png')] bg-cover bg-center bg-no-repeat h-64 sm:h-[400px] w-80 sm:w-[450px] max-w-full">
-            <div className="absolute top-16 sm:top-28 left-1/2 transform -translate-x-1/2 w-full text-center px-4">
-              <p className="text-xs sm:text-sm text-gray-900">we think this person could be good for you</p>
-            </div>
-
-            <div className="text-center mt-4 sm:mt-6 absolute top-20 sm:top-32 left-1/2 transform -translate-x-1/2 pt-2 w-full">
-              <div className="text-3xl sm:text-4xl font-black font-abril">70%</div>
-              <p className="text-gray-900 text-base sm:text-lg font-abeezee">Match percentage</p>
-            </div>
-
-            <div className="absolute bottom-12 sm:bottom-20 left-1/2 transform -translate-x-1/2 w-full px-4">
-              <p className="text-red-500 italic text-center text-base sm:text-lg font-courgette">Your match is here !</p>
-            </div>
-          </div>
+        <div className="flex flex-col items-center mx-auto px-4 w-full h-full justify-center relative">
+          <motion.img 
+            src="/assets/images/envelopclosed.png" 
+            alt="Envelope closed" 
+            className="absolute w-72 sm:w-96 md:w-[400px] max-w-full left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2"
+            style={{ opacity: closedEnvelopeOpacity, pointerEvents: 'none', height: 'auto' }}
+          />
+          <motion.img 
+            src="/assets/images/envelopopen1.png" 
+            alt="Envelope open" 
+            className="absolute w-72 sm:w-96 md:w-[400px] max-w-full left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2"
+            style={{ opacity: openEnvelopeOpacity, pointerEvents: 'none', height: 'auto' }}
+          />
+          <motion.img 
+            src="/assets/images/envelopread.png" 
+            alt="Envelope read" 
+            className="absolute w-72 sm:w-96 md:w-[400px] max-w-full left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2"
+            style={{ opacity: readEnvelopeOpacity, pointerEvents: 'none', height: 'auto' }}
+          />
         </div>
       </motion.section>
 
