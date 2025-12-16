@@ -1,0 +1,27 @@
+@import url('https://fonts.googleapis.com/css2?family=ABeeZee:wght@100;200;300;400;500;600;700;800;900&family=Abril+Fatface:wght@100;200;300;400;500;600;700;800;900&family=Chau+Philomene+One:wght@100;200;300;400;500;600;700;800;900&family=Courgette:wght@100;200;300;400;500;600;700;800;900&display=swap');
+@import "tailwindcss";
+
+
+@layer fontFamily {
+  .font-abril {
+    font-family: "Abril Fatface", serif;
+  }
+  .font-courgette {
+    font-family: "Courgette", cursive;
+  }
+  .font-abeezee {
+    font-family: "ABeeZee", sans-serif;
+  }
+  .font-chau {
+      font-family: "Chau Philomene One", sans-serif;
+  }
+}
+@theme {
+  --color-primary: #42012cff;
+  --color-secondary: #fcefdcff;
+  --color-third: #121063;
+}
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
